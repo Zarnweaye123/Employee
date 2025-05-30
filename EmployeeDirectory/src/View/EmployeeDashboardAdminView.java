@@ -1,26 +1,28 @@
 package View;
 
 import javax.swing.*;
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+ 
 public class EmployeeDashboardAdminView extends JPanel {
-	private JTextField textField;
-	private JTextField textField_1;
-    public EmployeeDashboardAdminView() {
-
+    private JTextField textField;
+    private JTextField textField_1;
+    private AdminNavBar parentFrame;
+    
+    public EmployeeDashboardAdminView(AdminNavBar parentFrame) {
+        this.parentFrame = parentFrame;
+        
         JButton detailButton = new JButton("Go to Employee Detail");
         detailButton.setBounds(378, 33, 150, 23);
-        detailButton.addActionListener(e -> {
-           // new EmployeeDetailPage().setVisible(true); // opens another JFrame
-        	JFrame edFrame=new JFrame("Employee Detail");
-        	edFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        	edFrame.setContentPane(new EmployeeDetailsAdminView());
-        	edFrame.setSize(1000,750);
-        	edFrame.setLocationRelativeTo(null);
-        	edFrame.setVisible(true);
-        		
+        detailButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                parentFrame.getCardLayout().show(parentFrame.getContentPanel(), "EmployeeDetails");
+                parentFrame.setActiveNav("Employee Details");
+            }
         });
+        
         setLayout(null);
-
         add(detailButton);
         
         JLabel lblNewLabel = new JLabel("Name");
@@ -41,4 +43,6 @@ public class EmployeeDashboardAdminView extends JPanel {
         add(textField_1);
         textField_1.setColumns(10);
     }
+    
+    
 }

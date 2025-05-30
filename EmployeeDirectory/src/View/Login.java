@@ -2,7 +2,6 @@ package View;
 
 import java.awt.EventQueue;
 import java.awt.Image;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -12,13 +11,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import Config.DBConfig;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.awt.Font;
 
 public class Login extends JFrame {
 
@@ -28,9 +26,6 @@ public class Login extends JFrame {
     private JTextField txtPassword;
     private JLabel lblMessage;
 
-    /**
-     * Launch the application.
-     */
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -44,11 +39,9 @@ public class Login extends JFrame {
         });
     }
 
-    /**
-     * Create the frame.
-     */
     public Login() {
-        setTitle("Login");
+        // [Previous initialization code remains the same until the btnLogin action listener]
+    	setTitle("Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 651, 476);
         contentPane = new JPanel();
@@ -67,21 +60,38 @@ public class Login extends JFrame {
         contentPane.add(lblImage);
 
         JLabel lblNewLabel = new JLabel("EmployeeDirectory");
-        lblNewLabel.setBounds(228, 120, 121, 21);
+        lblNewLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        lblNewLabel.setBounds(228, 120, 276, 21);
         contentPane.add(lblNewLabel);
 
-        JLabel lblNewLabel_1 = new JLabel("Username");
-        lblNewLabel_1.setBounds(102, 184, 90, 21);
-        contentPane.add(lblNewLabel_1);
+        JLabel lbUserName = new JLabel("Username");
+        lbUserName.setFont(new Font("Arial", Font.PLAIN, 13));
+        lbUserName.setBounds(102, 184, 90, 21);
+        contentPane.add(lbUserName);
 
         txtUserName = new JTextField();
         txtUserName.setBounds(226, 185, 178, 28);
         contentPane.add(txtUserName);
         txtUserName.setColumns(10);
+        txtUserName.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                // Get the character typed
+                char typedChar = e.getKeyChar();
+
+                // Check if the typed character is a digit
+                if (Character.isDigit(typedChar)) {
+                    // Consume the event to prevent the digit from being entered
+                    e.consume();
+                    lblMessage.setText("Username cannot contain digits.");
+                }
+            }
+        });
 
         // Add KeyListener to ensure only letters are entered in the username field
        
         JLabel lblNewLabel_2 = new JLabel("Password");
+        lblNewLabel_2.setFont(new Font("Arial", Font.PLAIN, 13));
         lblNewLabel_2.setBounds(102, 255, 90, 13);
         contentPane.add(lblNewLabel_2);
 
@@ -90,7 +100,12 @@ public class Login extends JFrame {
         contentPane.add(txtPassword);
         txtPassword.setColumns(10);
 
+    	
+    	
+    	
+    	
         JButton btnLogin = new JButton("Login");
+        btnLogin.setFont(new Font("Arial", Font.PLAIN, 13));
         btnLogin.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String username = txtUserName.getText().trim();
@@ -116,35 +131,49 @@ public class Login extends JFrame {
                     DBConfig db = new DBConfig();
                     Connection conn = db.getConnection();
 
-                    // First, check if the username exists in the database
-                    String checkUserSQL = "SELECT * FROM empdirectory.admin WHERE admName = ?";
-                    PreparedStatement pstCheckUser = conn.prepareStatement(checkUserSQL);
-                    pstCheckUser.setString(1, username);
-                    ResultSet rsUserCheck = pstCheckUser.executeQuery();
+                    // First check if it's an admin
+                    String adminSQL = "SELECT * FROM empdirectory.admin WHERE admName = ? AND password = ?";
+                    PreparedStatement adminStmt = conn.prepareStatement(adminSQL);
+                    adminStmt.setString(1, username);
+                    adminStmt.setString(2, password);
+                    ResultSet adminRs = adminStmt.executeQuery();
 
-                    // If username doesn't exist
-                    if (!rsUserCheck.next()) {
-                        lblMessage.setText("Incorrect username!");
+                    if (adminRs.next()) {
+                        lblMessage.setText("Admin Login Successful!");
+                        new AdminNavBar().setVisible(true);
+                        dispose();
                         return;
                     }
 
-                    // Now, check the password if the username exists
-                    String sql = "SELECT * FROM empdirectory.admin WHERE admName = ? AND password = ?";
-                    PreparedStatement pst = conn.prepareStatement(sql);
-                    pst.setString(1, username);
-                    pst.setString(2, password);
+                    // If not admin, check if it's an employee
+                    String employeeSQL = "SELECT * FROM empdirectory.employee WHERE empName = ? AND password = ?";
+                    PreparedStatement employeeStmt = conn.prepareStatement(employeeSQL);
+                    employeeStmt.setString(1, username);
+                    employeeStmt.setString(2, password);
+                    ResultSet employeeRs = employeeStmt.executeQuery();
 
-                    ResultSet rs = pst.executeQuery();
+                    if (employeeRs.next()) {
+                        lblMessage.setText("Employee Login Successful!");
+                        new EmployeeNavBar().setVisible(true);
+                        dispose();
+                        return;
+                    }
 
-                    // If both username and password are correct
-                    if (rs.next()) {
-                        lblMessage.setText("Login Successful!");
+                    // If neither admin nor employee matched
+                    // Check if username exists in either table
+                    String checkAdminSQL = "SELECT * FROM empdirectory.admin WHERE admName = ?";
+                    PreparedStatement checkAdminStmt = conn.prepareStatement(checkAdminSQL);
+                    checkAdminStmt.setString(1, username);
+                    ResultSet checkAdminRs = checkAdminStmt.executeQuery();
 
-                        // Open the AdminNavBar window
-                        new AdminNavBar().setVisible(true);
-                        dispose(); // Close the login form
+                    String checkEmployeeSQL = "SELECT * FROM empdirectory.employee WHERE empName = ?";
+                    PreparedStatement checkEmployeeStmt = conn.prepareStatement(checkEmployeeSQL);
+                    checkEmployeeStmt.setString(1, username);
+                    ResultSet checkEmployeeRs = checkEmployeeStmt.executeQuery();
+
+                    if (!checkAdminRs.next() && !checkEmployeeRs.next()) {
+                        lblMessage.setText("Incorrect username and password!");
                     } else {
-                        // If username exists but password doesn't match
                         lblMessage.setText("Incorrect password!");
                     }
 
@@ -155,6 +184,7 @@ public class Login extends JFrame {
             }
         });
 
+        // [Rest of the code remains the same]
         btnLogin.setBounds(268, 361, 91, 21);
         contentPane.add(btnLogin);
 
@@ -176,5 +206,4 @@ public class Login extends JFrame {
             }
         });
     }
-
 }
