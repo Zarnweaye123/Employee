@@ -221,7 +221,7 @@ public class AddEmployeeDetailsView extends JPanel {
                 pm.setPassword(txtPassword.getText().trim());
 
                 if (Checking.IsValidName(pm.getEmpName()) ||
-                    !Checking.IsEmailformat(pm.getEmail()) ||
+                    !Checking.IsEmailFormat(pm.getEmail()) ||
                     !Checking.isPhoneNo(pm.getPhone())) {
                     
                     JOptionPane.showMessageDialog(null, "Invalid related field", "Invalid", JOptionPane.ERROR_MESSAGE);

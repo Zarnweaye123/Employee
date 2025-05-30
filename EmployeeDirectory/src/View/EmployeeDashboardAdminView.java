@@ -12,7 +12,7 @@ public class EmployeeDashboardAdminView extends JPanel {
     public EmployeeDashboardAdminView(AdminNavBar parentFrame) {
         this.parentFrame = parentFrame;
         
-        JButton detailButton = new JButton("Go to Employee Detail");
+        JButton detailButton = new JButton("Zar Zar");
         detailButton.setBounds(378, 33, 150, 23);
         detailButton.addActionListener(new ActionListener() {
             @Override
